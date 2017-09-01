@@ -52,7 +52,7 @@ class CsbkCrawler:
             qs = QsItem(text, votes, comments)
             qs_list.append(qs)
 
-if __name__ == '__main__':
+def collect():
 
     qss = []
 
@@ -60,6 +60,15 @@ if __name__ == '__main__':
     crawler = CsbkCrawler(first_page, qss)
 
     selected_qss = heapq.nlargest(10, qss, lambda qs: qs.votes)
+    return selected_qss
+
+def collect_text():
+    qss = collect()
+    return '\n---------------------------------------\n'.join(str(qs) for qs in qss)
+    
+if __name__ == '__main__':
+
+    selected_qss = collect()
 
     for qs in selected_qss:
         print(qs)
