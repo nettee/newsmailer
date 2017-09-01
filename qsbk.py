@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 
 import heapq
+from datetime import date
+from pathlib import Path
 
 from urllib.parse import urljoin
 import requests
@@ -19,6 +21,20 @@ class QsItem:
 
     def __str__(self):
         return '{}\n{} 好笑, {} 评论'.format(self.text, self.votes, self.comments)
+
+    def toJson(self):
+        return '''{{
+    "text": "{}",
+    "votes": "{}",
+    "comments": "{}"
+}}'''.format(self.text, self.votes, self.comments)
+
+class QsList(list):
+
+    def toJson(self):
+        return '''[
+    {}
+]'''.format(',\n    '.join(qs.toJson() for qs in self))
 
 class CsbkCrawler:
 
@@ -54,17 +70,33 @@ class CsbkCrawler:
 
 def collect():
 
-    qss = []
+    qss = QsList()
 
     first_page = 'https://www.qiushibaike.com/hot/'
     crawler = CsbkCrawler(first_page, qss)
 
     selected_qss = heapq.nlargest(10, qss, lambda qs: qs.votes)
-    return selected_qss
+    qss2 = QsList()
+    qss2.extend(selected_qss)
+    return qss2
 
 def collect_text():
-    qss = collect()
-    return '\n---------------------------------------\n'.join(str(qs) for qs in qss)
+
+    today = date.today().strftime('%Y%m%d')
+    print('today:', today)
+
+    p = Path('data/qsbk-{}.txt'.format(today))
+    if p.is_file():
+        print('have file')
+        with p.open('r') as f:
+            return f.read()
+    else:
+        print('no file')
+        qss = collect()
+        text = '\n---------------------------------------\n'.join(str(qs) for qs in qss)
+        with p.open('w') as f:
+            print(text, file=f)
+        return text
     
 if __name__ == '__main__':
 

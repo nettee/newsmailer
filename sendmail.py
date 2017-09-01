@@ -9,8 +9,8 @@ from email.utils import parseaddr, formataddr
 
 import smtplib
 
-#receiver = 'anchori@163.com'
-receiver = 'tfn0510@gmail.com'
+receiver = 'anchori@163.com'
+#receiver = 'tfn0510@gmail.com'
 
 def format_addr(name, addr):
     return formataddr((Header(name, 'utf-8').encode(), addr))
