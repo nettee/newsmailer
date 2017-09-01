@@ -1,29 +1,67 @@
 #!/usr/bin/env python3
 
+import heapq
+
 from urllib.parse import urljoin
 import requests
 
 from bs4 import BeautifulSoup
 
+class QsItem:
+
+    def __init__(self, text, votes, comments):
+        self.text = text
+        self.votes = votes
+        self.comments = comments
+
+    def __repr__(self):
+        return self.__str__()
+
+    def __str__(self):
+        return '{}\n{} 好笑, {} 评论'.format(self.text, self.votes, self.comments)
+
 class CsbkCrawler:
 
-    def __init__(self, page):
-        print(page)
+    def __init__(self, page, qs_list):
         self.page = page
         res = requests.get(page)
         res.raise_for_status()
         html = BeautifulSoup(res.text, 'lxml')
+        self.crawl_page(html, qs_list)
         next_ = html.find('span', class_='next')
         next_string = next_.get_text().strip()
         if next_string == '下一页':
             next_page = next_.parent['href']
             next_page = urljoin(page, next_page)
-            crawler = CsbkCrawler(next_page)
+            crawler = CsbkCrawler(next_page, qs_list)
 
+    def crawl_page(self, html, qs_list):
+        content = html.find('div', id='content-left')
+        articles = content.find_all('div', class_='article')
+        for article in articles:
+            a = article.find('a', recursive=False)
+            text = a.find('div', class_='content').find('span').get_text().strip()
+            thumb = article.find('div', class_='thumb', recursive=False)
+            if thumb is not None:
+                continue # omit qs with pictures currently
+            stats = article.find('div', class_='stats', recursive=False)
+            span_vote = stats.find('span', class_='stats-vote').find('i', class_='number')
+            votes = int(span_vote.get_text().strip())
+            span_comment = stats.find('span', class_='stats-comments').find('i', class_='number')
+            comments = int(span_comment.get_text().strip())
+            qs = QsItem(text, votes, comments)
+            qs_list.append(qs)
 
 if __name__ == '__main__':
 
+    qss = []
+
     first_page = 'https://www.qiushibaike.com/hot/'
-    crawler = CsbkCrawler(first_page)
+    crawler = CsbkCrawler(first_page, qss)
+
+    selected_qss = heapq.nlargest(10, qss, lambda qs: qs.votes)
+
+    for qs in selected_qss:
+        print(qs)
     
     
