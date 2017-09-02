@@ -9,32 +9,18 @@ import requests
 
 from bs4 import BeautifulSoup
 
-class QsItem:
+class QsItem(dict):
 
     def __init__(self, text, votes, comments):
-        self.text = text
-        self.votes = votes
-        self.comments = comments
+        self['text'] = text
+        self['votes'] = votes
+        self['comments'] = comments
 
     def __repr__(self):
         return self.__str__()
 
     def __str__(self):
-        return '{}\n{} 好笑, {} 评论'.format(self.text, self.votes, self.comments)
-
-    def toJson(self):
-        return '''{{
-    "text": "{}",
-    "votes": "{}",
-    "comments": "{}"
-}}'''.format(self.text, self.votes, self.comments)
-
-class QsList(list):
-
-    def toJson(self):
-        return '''[
-    {}
-]'''.format(',\n    '.join(qs.toJson() for qs in self))
+        return 'Qs<{text} - {votes} 好笑, {comments} 评论>'.format(**self)
 
 class CsbkCrawler:
 
@@ -70,34 +56,27 @@ class CsbkCrawler:
 
 def collect():
 
-    qss = QsList()
+    qss = []
 
     first_page = 'https://www.qiushibaike.com/hot/'
     crawler = CsbkCrawler(first_page, qss)
 
-    selected_qss = heapq.nlargest(10, qss, lambda qs: qs.votes)
-    qss2 = QsList()
-    qss2.extend(selected_qss)
-    return qss2
+    selected_qss = heapq.nlargest(10, qss, lambda qs: qs["votes"])
+    return selected_qss
 
-def collect_text():
+def generate_mail(qs_list):
 
-    today = date.today().strftime('%Y%m%d')
-    print('today:', today)
+    mimetype = 'plain'
+    subject = '糗事百科每日精选'
+    text = '\n--------------------------\n'.join('{text}\n{votes} 好笑 {comments} 评论'.format(**qs) for qs in qs_list)
 
-    p = Path('data/qsbk-{}.txt'.format(today))
-    if p.is_file():
-        print('have file')
-        with p.open('r') as f:
-            return f.read()
-    else:
-        print('no file')
-        qss = collect()
-        text = '\n---------------------------------------\n'.join(str(qs) for qs in qss)
-        with p.open('w') as f:
-            print(text, file=f)
-        return text
-    
+    return {
+        'mimetype': mimetype,
+        'subject': subject,
+        'text': text
+    }
+
+
 if __name__ == '__main__':
 
     selected_qss = collect()
