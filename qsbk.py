@@ -44,7 +44,8 @@ class CsbkCrawler:
         for article in articles:
             a = article.find('a', recursive=False)
             link = urljoin(page_url, a['href'])
-            text = a.find('div', class_='content').find('span').get_text().strip()
+            span_text = a.find('div', class_='content').find('span')
+            text = list(span_text.stripped_strings)
             thumb = article.find('div', class_='thumb', recursive=False)
             if thumb is not None:
                 continue # omit qs with pictures currently
@@ -75,10 +76,10 @@ def generate_mail(qs_list, date_string):
 </body></html>'''.format(
         '<hr />\n'.join(
             '''<h4 align="center">{}</h4>
-<p text-indent="2em">{text}</p>
+<p>{}</p>
 <p>{votes} 好笑 {comments} 评论 
     <a href="{url}">查看原文</a>
-</p>\n'''.format(i+1, **qs) 
+</p>\n'''.format(i+1, '<br/>'.join(qs['text']), **qs) 
             for (i, qs) in enumerate(qs_list)))
 
     return {
