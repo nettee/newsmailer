@@ -22,6 +22,6 @@ if __name__ == '__main__':
         with fp.open('w') as f:
             print(json_string, file=f)
 
-    mail = qsbk.generate_mail(qs_list)
+    mail = qsbk.generate_mail(qs_list, today)
     sendmail.sendmail(mail)
 

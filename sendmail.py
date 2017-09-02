@@ -22,24 +22,12 @@ smtp_server = config['sender']['server']
 def format_addr(name, addr):
     return formataddr((Header(name, 'utf-8').encode(), addr))
 
-def send_text(subject, text):
-    msg = MIMEText(text, 'plain', 'utf-8')
-    msg['From'] = format_addr(from_name, from_addr)
-    msg['To'] = receiver
-    msg['Subject'] = Header(subject, 'utf-8').encode()
-
-    server = smtplib.SMTP(smtp_server, 25)
-    server.set_debuglevel(1)
-    server.login(from_addr, password)
-    server.sendmail(from_addr, [receiver], msg.as_string())
-    server.quit()
-
 def sendmail(mail):
     mimetype = mail['mimetype']
     subject = mail['subject']
-    text = mail['text']
+    body = mail['body']
 
-    msg = MIMEText(text, mimetype, 'utf-8')
+    msg = MIMEText(body, mimetype, 'utf-8')
     msg['From'] = format_addr(from_name, from_addr)
     msg['To'] = receiver
     msg['Subject'] = Header(subject, 'utf-8').encode()
