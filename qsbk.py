@@ -1,14 +1,13 @@
 #!/usr/bin/env python3
 
 import heapq
-from datetime import date
-from pathlib import Path
-
 from urllib.parse import urljoin
-import requests
 
+import requests
 from bs4 import BeautifulSoup
 import jinja2
+
+abbr = 'qsbk'
 
 class QsItem(dict):
 

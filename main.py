@@ -5,23 +5,29 @@ from pathlib import Path
 import json
 
 import qsbk
+import lily
 import sendmail
+
+active_packages = [
+    #qsbk,
+    lily,
+]
 
 if __name__ == '__main__':
 
     today = date.today().strftime('%Y%m%d')
 
-    fp = Path('data/qsbk-{}.json'.format(today))
-    if fp.is_file():
-        with fp.open('r') as f:
-            json_string = f.read()
-            qs_list = json.loads(json_string)
-    else:
-        qs_list = qsbk.collect()
-        json_string = json.dumps(qs_list)
-        with fp.open('w') as f:
-            print(json_string, file=f)
+    for package in active_packages:
+        fp = Path('data/{}-{}.json'.format(package.abbr, today))
+        if fp.is_file():
+            with fp.open('r') as f:
+                json_string = f.read()
+                lista = json.loads(json_string)
+        else:
+            lista = qsbk.collect()
+            json_string = json.dumps(lista)
+            with fp.open('w') as f:
+                print(json_string, file=f)
 
-    mail = qsbk.generate_mail(qs_list, today)
-    sendmail.sendmail(mail)
-
+        mail = package.generate_mail(lista, today)
+        sendmail.sendmail(mail)
