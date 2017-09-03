@@ -82,12 +82,12 @@ def generate_mail(qs_list, date_string):
     {% for qs in qs_list %}
     <h4 align="center">{{ loop.index }}</h4>
     <p>{{ qs.text | join('<br/>') }}</p>
-    <p>{{ qs.votes }} 好笑 {{ qs.comments }} 评论 <a href="{{ qs.url }}">查看原文</a></p>
     <p>
         {% for img in qs.images %}
-        <span>（有图）</span>
+        <img src="{{ img }}" width="100%" alt="{{ img }}" />
         {% endfor %}
     </p>
+    <p>{{ qs.votes }} 好笑 {{ qs.comments }} 评论 <a href="{{ qs.url }}">查看原文</a></p>
     {% if not loop.last %}
     <hr />
     {% endif %}

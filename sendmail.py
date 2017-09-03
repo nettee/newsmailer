@@ -5,11 +5,13 @@ import configparser
 from email import encoders
 from email.header import Header
 from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 from email.utils import parseaddr, formataddr
 
 import smtplib
 
 receiver = 'anchori@163.com'
+#receiver = 'nettee.liu@gmail.com'
 #receiver = 'tfn0510@gmail.com'
 
 config = configparser.ConfigParser()
@@ -27,10 +29,12 @@ def sendmail(mail):
     subject = mail['subject']
     body = mail['body']
 
-    msg = MIMEText(body, mimetype, 'utf-8')
+    msg = MIMEMultipart()
     msg['From'] = format_addr(from_name, from_addr)
     msg['To'] = receiver
     msg['Subject'] = Header(subject, 'utf-8').encode()
+
+    msg.attach(MIMEText(body, mimetype, 'utf-8'))
 
     server = smtplib.SMTP(smtp_server, 25)
     server.set_debuglevel(1)
