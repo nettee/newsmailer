@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 from urllib.parse import urljoin
+import json
 
 import requests
 from bs4 import BeautifulSoup
@@ -23,9 +24,9 @@ class TopItem(dict):
     def __str__(self):
         return 'Top<[{rank}] {title} ({comments})>'.format(**self)
 
-def collect():
+def collect_abstract():
 
-    top_list = []
+    abstract = []
 
     page = 'http://bbs.nju.edu.cn/bbstop10'
 
@@ -44,9 +45,26 @@ def collect():
         link = urljoin(page, link)
         comments = int(tds[4].string.strip())
         ti = TopItem(rank, board, title, link, comments)
-        top_list.append(ti)
+        abstract.append(ti)
 
-    return top_list
+    return abstract
+
+def collect_details(abstract):
+
+    details = {}
+
+    for item in abstract:
+        url = item['link']
+        print(url)
+        res = requests.get(url)
+        print(res.text)
+        print('===========================================')
+
+    return details
+
+def collect():
+
+    return collect_abstract()
 
 def generate_mail(top_list, date_string):
 
@@ -74,9 +92,8 @@ def generate_mail(top_list, date_string):
 
 if __name__ == '__main__':
 
-    top_list = collect()
-    mail = generate_mail(top_list, '20170903')
-    print(mail)
+    abstract = collect_abstract()
+    collect_details(abstract)
 
 
 
