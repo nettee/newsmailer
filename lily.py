@@ -53,6 +53,8 @@ def collect_abstract():
 
 def collect_details(abstract):
 
+    details = abstract
+
     for item in abstract:
         url = item['link']
         res = requests.get(url)
@@ -60,18 +62,52 @@ def collect_details(abstract):
 
         m = re.search('\[本篇人气: (\d+)\]', res.text)
         pop = int(m.group(1)) if m is not None else None
-        item['pop'] = pop
+        item['popularity'] = pop
+
+        html = BeautifulSoup(res.text, 'lxml')
+        content = html.find('center')
+        floors_table = content.find_all('table', class_='main')
+
+        floors = []
+
+        for (i, floor_table) in enumerate(floors_table):
+            textarea = floor_table.find('textarea')
+            m = re.search('发信人: (.+),', str(textarea))
+            if m is not None:
+                user = m.group(1)
+            else:
+                user = None
+            m2 = re.search('发信站:.+[(](.+)[)](.+)--', str(textarea), re.DOTALL)
+            if m2 is not None:
+                timestr = m2.group(1)
+                bodytext = m2.group(2).strip()
+                bodytext = bodytext.replace('\r\n', '\n')
+                bodytext = re.sub('\n(?!\n)', '', bodytext)
+                body = bodytext.split('\n')
+            else:
+                timestr = None
+                body = None
+            floor = {
+                'index': i,
+                'user': user,
+                'timestamp': timestr,
+                'body': body
+            }
+
+            floors.append(floor)
+
+        item['floors'] = floors
 
         # Anti-crawler strategy aborts the 10th request.
         time.sleep(1)
 
-    return abstract
+    return details
 
 def collect():
 
     return collect_details(collect_abstract())
 
-def generate_mail(top_list, date_string):
+def generate_mail(details, date_string):
 
     mimetype = 'html'
     subject = '小百合每日十大 {}'.format(date_string)
@@ -80,16 +116,16 @@ def generate_mail(top_list, date_string):
 <body>
     <h3>摘要</h3>
     <p>
-    {% for top in top_list %}
+    {% for top in details %}
     {{ loop.index }}. 
     <a href="{{ top.link }}">{{ top.title }}</a>
-    (评论:{{ top.comments }} | 人气:{{ top['pop'] }}) 
+    (评论:{{ top.comments }} | 人气:{{ top.popularity }}) 
     <br />
     {% endfor %}
     </p>
 </body>
 </html>''')
-    body = template.render(top_list=top_list)
+    body = template.render(details=details)
 
     return {
         'mimetype': mimetype,

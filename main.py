@@ -22,12 +22,12 @@ if __name__ == '__main__':
         if fp.is_file():
             with fp.open('r') as f:
                 json_string = f.read()
-                lista = json.loads(json_string)
+                data = json.loads(json_string)
         else:
-            lista = package.collect()
-            json_string = json.dumps(lista)
+            data = package.collect()
+            json_string = json.dumps(data)
             with fp.open('w') as f:
                 print(json_string, file=f)
 
-        mail = package.generate_mail(lista, today)
+        mail = package.generate_mail(data, today)
         sendmail.sendmail(mail)
