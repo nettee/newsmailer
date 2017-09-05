@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+import time
+import re
 from urllib.parse import urljoin
 import json
 
@@ -51,20 +53,23 @@ def collect_abstract():
 
 def collect_details(abstract):
 
-    details = {}
-
     for item in abstract:
         url = item['link']
-        print(url)
         res = requests.get(url)
-        print(res.text)
-        print('===========================================')
+        res.raise_for_status()
 
-    return details
+        m = re.search('\[本篇人气: (\d+)\]', res.text)
+        pop = int(m.group(1)) if m is not None else None
+        item['pop'] = pop
+
+        # Anti-crawler strategy aborts the 10th request.
+        time.sleep(1)
+
+    return abstract
 
 def collect():
 
-    return collect_abstract()
+    return collect_details(collect_abstract())
 
 def generate_mail(top_list, date_string):
 
@@ -76,7 +81,9 @@ def generate_mail(top_list, date_string):
     <h3>摘要</h3>
     <p>
     {% for top in top_list %}
-    {{ loop.index }}. (热度:{{ top.comments }}) <a href="{{ top.link }}">{{ top.title }}</a>
+    {{ loop.index }}. 
+    <a href="{{ top.link }}">{{ top.title }}</a>
+    (评论:{{ top.comments }} | 人气:{{ top['pop'] }}) 
     <br />
     {% endfor %}
     </p>
@@ -92,8 +99,8 @@ def generate_mail(top_list, date_string):
 
 if __name__ == '__main__':
 
-    abstract = collect_abstract()
-    collect_details(abstract)
+    details = collect()
+    print(json.dumps(details))
 
 
 

@@ -13,7 +13,7 @@ import smtplib
 receivers = [
     'anchori@163.com',
     #'nettee.liu@gmail.com',
-    'tfn0510@gmail.com',
+    #'tfn0510@gmail.com',
 ]
 
 config = configparser.ConfigParser()
