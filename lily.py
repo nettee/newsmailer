@@ -72,11 +72,16 @@ def collect_details(abstract):
 
         for (i, floor_table) in enumerate(floors_table):
             textarea = floor_table.find('textarea')
+
             m = re.search('发信人: (.+),', str(textarea))
             if m is not None:
                 user = m.group(1)
             else:
                 user = None
+
+            if i == 0:
+                host = user
+
             m2 = re.search('发信站:.+[(](.+)[)](.+)--', str(textarea), re.DOTALL)
             if m2 is not None:
                 timestr = m2.group(1)
@@ -87,9 +92,11 @@ def collect_details(abstract):
             else:
                 timestr = None
                 body = None
+
             floor = {
                 'index': i,
                 'user': user,
+                'isHost': user == host,
                 'timestamp': timestr,
                 'body': body
             }
@@ -123,6 +130,36 @@ def generate_mail(details, date_string):
     <br />
     {% endfor %}
     </p>
+
+    {% for top in details %}
+        <hr />
+        <h3>{{ top.rank }}</h3>
+        <p><strong>
+            {{ top.title }} 
+            (评论:{{ top.comments }} | 人气:{{ top.popularity }}) 
+            <a href="{{ top.link }}">-></a>
+        </strong></p>
+        {% for floor in top.floors %}
+            <p>
+                <strong>
+                {% if floor.index == 0 %}
+                楼主
+                {% else %}
+                {{ floor.index }}楼
+                {% endif %}
+                </strong>
+                {{ floor.user }}
+                <br />
+                {% for line in floor.body %}
+                    {{ line }}
+                    <br />
+                {% endfor %}
+                {% if floor.index == 0 %}
+                {{ floor.timestamp }}
+                {% endif %}
+            </p>
+        {% endfor %}
+    {% endfor %}
 </body>
 </html>''')
     body = template.render(details=details)

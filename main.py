@@ -9,7 +9,7 @@ import lily
 import sendmail
 
 active_packages = [
-    #qsbk,
+    qsbk,
     lily,
 ]
 
