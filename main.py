@@ -6,6 +6,7 @@ import json
 
 import qsbk
 import lily
+import bxj
 import sendmail
 
 receivers = [
@@ -15,8 +16,9 @@ receivers = [
 ]
 
 active_packages = [
-    qsbk,
-    lily,
+#    qsbk,
+#    lily,
+    bxj,
 ]
 
 if __name__ == '__main__':
