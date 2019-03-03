@@ -1,6 +1,8 @@
 mail.ini
 data/
 
+.idea/
+
 __pycache__
 *.log
 *.swp
